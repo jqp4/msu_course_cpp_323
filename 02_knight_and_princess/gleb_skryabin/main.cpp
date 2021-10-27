@@ -17,7 +17,9 @@ void writeGraphJSON(const Graph& graph, const std::string& filename) {
 
 int main() {
   Graph graph = Graph();
-  graph.generate(3, 4);
+  graph.generate(2, 2);
+  writeGraphJSON(graph, "graph.json");
+  return 0;
 }
 
 int main_() {

@@ -1,13 +1,17 @@
 #include <assert.h>
 #include <array>
+#include <cstdlib>
+#include <ctime>
 #include <iostream>
 #include <unordered_map>
 #include <unordered_set>
 
+using Depth = int;
 using EdgeId = int;
 using VertexId = int;
 constexpr int INVALID_ID = -1;
-constexpr int INVALID_DEPTH = -1;
+constexpr int DEFAULT_DEPTH = 0;
+constexpr float FULL_P = 100.0;
 
 enum {
   EDGE_COLOR_GRAY = 0,
@@ -17,24 +21,6 @@ enum {
   EDGE_COLOR_RED = 4
 };
 
-std::string getEdgeColorStr(int colorId) {
-  switch (colorId) {
-    case EDGE_COLOR_GRAY:
-      return "gray";
-    case EDGE_COLOR_GREEN:
-      return "green";
-    case EDGE_COLOR_BLUE:
-      return "blue";
-    case EDGE_COLOR_YELLOW:
-      return "yellow";
-    case EDGE_COLOR_RED:
-      return "red";
-    default:
-      std::runtime_error("Invalid edge color id");
-      return "-";
-  }
-}
-
 class Edge {
  public:
   Edge(const EdgeId& inpId,
@@ -42,18 +28,38 @@ class Edge {
        const VertexId& vertexTrgId)
       : id_(inpId), vertexIds_(vertexSrcId, vertexTrgId) {}
 
+  const EdgeId& getId() const { return id_; }
+  const Depth& getColor() const { return color_; }
   const std::pair<VertexId, VertexId>& getVertexIds() const {
     return vertexIds_;
   }
 
+  std::string getColorStr() const {
+    switch (color_) {
+      case EDGE_COLOR_GRAY:
+        return "gray";
+      case EDGE_COLOR_GREEN:
+        return "green";
+      case EDGE_COLOR_BLUE:
+        return "blue";
+      case EDGE_COLOR_YELLOW:
+        return "yellow";
+      case EDGE_COLOR_RED:
+        return "red";
+      default:
+        std::runtime_error("Invalid edge color id");
+        return "-";
+    }
+  }
+
   std::string toJSON() const {
     std::string json;
-    json += "{\n\"id\": " + std::to_string(id_);
-    json += ",\n\"vertex_ids\": [";
+    json += "{\"id\": " + std::to_string(id_);
+    json += ",\"vertex_ids\": [";
     json += std::to_string(vertexIds_.first) + ", ";
-    json += std::to_string(vertexIds_.second) + "],\n";
-    json += "\"color\": \"" + getEdgeColorStr(color_);
-    json += "\"\n}";
+    json += std::to_string(vertexIds_.second) + "],";
+    json += "\"color\": \"" + getColorStr();
+    json += "\"}";
     return json;
   }
 
@@ -76,12 +82,14 @@ class Vertex {
     return edgeIds_.find(edgeId) != edgeIds_.end();
   }
 
+  const VertexId& getId() const { return id_; }
+  const Depth& getDepth() const { return depth_; }
   const std::unordered_set<EdgeId>& getEdgeIds() const { return edgeIds_; }
 
   std::string toJSON() const {
     std::string json;
-    json += "{\n\"id\": " + std::to_string(id_);
-    json += ",\n\"edge_ids\": [";
+    json += "{\"id\": " + std::to_string(id_);
+    json += ",\"edge_ids\": [";
 
     for (auto pEdgeId = edgeIds_.begin(); pEdgeId != edgeIds_.end();
          pEdgeId++) {
@@ -89,29 +97,42 @@ class Vertex {
       json += std::to_string(*pEdgeId);
     }
 
-    json += "],\n\"depth\": ";
-    json += std::to_string(depth_) + "\n}";
+    json += "],\"depth\": ";
+    json += std::to_string(depth_) + "}";
     return json;
   }
 
  private:
-  const EdgeId id_ = INVALID_ID;
-  const int depth_ = INVALID_DEPTH;
+  const VertexId id_ = INVALID_ID;
+  const Depth depth_ = DEFAULT_DEPTH;
   std::unordered_set<EdgeId> edgeIds_ = {};
 };
 
 class Graph {
  public:
-  void generate(int depth, int new_vertices_num) {
-    float step = 100.0 / depth;
-    float percent = 100.0;
-
-    for (int i = 0; i < depth; i++) {
-      std::cout << percent << std::endl;
-      percent -= step;
+  void generateBranch(const VertexId& vertexSrcId,
+                      const Depth& inpDepth,
+                      Depth nowDepth,
+                      int new_vertices_num) {
+    if (nowDepth > 0) {
+      float p = FULL_P * nowDepth / inpDepth;
+      for (int j = 0; j < new_vertices_num; j++) {
+        if (p >= rand() % 100) {
+          const VertexId vertexNewId = addVertex();
+          addEdge(vertexSrcId, vertexNewId);
+          generateBranch(vertexNewId, inpDepth, nowDepth - 1, new_vertices_num);
+        }
+      }
     }
-    percent = 0.0;
-    std::cout << percent << std::endl;
+  }
+
+  void generate(const Depth& depth, int new_vertices_num) {
+    std::srand(std::time(nullptr));
+    const VertexId vertexSrcId = addVertex();
+
+    for (int j = 0; j < new_vertices_num; j++) {
+      generateBranch(vertexSrcId, depth, depth - 1, new_vertices_num);
+    }
   }
 
   EdgeId addEdge(const VertexId& vertexSrcId, const VertexId& vertexTrgId) {
@@ -164,14 +185,14 @@ class Graph {
     json = "{\n\"vertices\": [\n";
     for (auto pVertexPair = vertices_.begin(); pVertexPair != vertices_.end();
          pVertexPair++) {
-      json += pVertexPair != vertices_.begin() ? ", " : "";
+      json += pVertexPair != vertices_.begin() ? ",\n" : "";
       json += pVertexPair->second.toJSON();
     }
 
     json += "\n ],\n\"edges\": [\n";
     for (auto pEdgePair = edges_.begin(); pEdgePair != edges_.end();
          pEdgePair++) {
-      json += pEdgePair != edges_.begin() ? ", " : "";
+      json += pEdgePair != edges_.begin() ? ",\n" : "";
       json += pEdgePair->second.toJSON();
     }
 
