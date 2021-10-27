@@ -7,6 +7,33 @@
 using EdgeId = int;
 using VertexId = int;
 constexpr int INVALID_ID = -1;
+constexpr int INVALID_DEPTH = -1;
+
+enum {
+  EDGE_COLOR_GRAY = 0,
+  EDGE_COLOR_GREEN = 1,
+  EDGE_COLOR_BLUE = 2,
+  EDGE_COLOR_YELLOW = 3,
+  EDGE_COLOR_RED = 4
+};
+
+std::string getEdgeColorStr(int colorId) {
+  switch (colorId) {
+    case EDGE_COLOR_GRAY:
+      return "gray";
+    case EDGE_COLOR_GREEN:
+      return "green";
+    case EDGE_COLOR_BLUE:
+      return "blue";
+    case EDGE_COLOR_YELLOW:
+      return "yellow";
+    case EDGE_COLOR_RED:
+      return "red";
+    default:
+      std::runtime_error("Invalid edge color id");
+      return "-";
+  }
+}
 
 class Edge {
  public:
@@ -24,12 +51,15 @@ class Edge {
     json += "{\n\"id\": " + std::to_string(id_);
     json += ",\n\"vertex_ids\": [";
     json += std::to_string(vertexIds_.first) + ", ";
-    json += std::to_string(vertexIds_.second) + "]\n}";
+    json += std::to_string(vertexIds_.second) + "],\n";
+    json += "\"color\": \"" + getEdgeColorStr(color_);
+    json += "\"\n}";
     return json;
   }
 
  private:
   const EdgeId id_ = INVALID_ID;
+  const int color_ = EDGE_COLOR_GRAY;
   const std::pair<VertexId, VertexId> vertexIds_ = {INVALID_ID, INVALID_ID};
 };
 
@@ -59,17 +89,31 @@ class Vertex {
       json += std::to_string(*pEdgeId);
     }
 
-    json += "]\n}";
+    json += "],\n\"depth\": ";
+    json += std::to_string(depth_) + "\n}";
     return json;
   }
 
  private:
   const EdgeId id_ = INVALID_ID;
+  const int depth_ = INVALID_DEPTH;
   std::unordered_set<EdgeId> edgeIds_ = {};
 };
 
 class Graph {
  public:
+  void generate(int depth, int new_vertices_num) {
+    float step = 100.0 / depth;
+    float percent = 100.0;
+
+    for (int i = 0; i < depth; i++) {
+      std::cout << percent << std::endl;
+      percent -= step;
+    }
+    percent = 0.0;
+    std::cout << percent << std::endl;
+  }
+
   EdgeId addEdge(const VertexId& vertexSrcId, const VertexId& vertexTrgId) {
     assert(containVertex(vertexSrcId) && "ERROR: Vertex doesn't exists");
     assert(containVertex(vertexTrgId) && "ERROR: vertex doesn't exists");

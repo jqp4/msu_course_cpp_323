@@ -17,6 +17,11 @@ void writeGraphJSON(const Graph& graph, const std::string& filename) {
 
 int main() {
   Graph graph = Graph();
+  graph.generate(3, 4);
+}
+
+int main_() {
+  Graph graph = Graph();
   const int edgesCount = 18;
   const int verticesCount = 14;
   const std::array<std::pair<int, int>, edgesCount> inputEdges = {{
