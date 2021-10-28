@@ -1,7 +1,5 @@
 #include <assert.h>
 #include <array>
-#include <cstdlib>
-#include <ctime>
 #include <iostream>
 #include <unordered_map>
 #include <unordered_set>
@@ -11,7 +9,6 @@ using EdgeId = int;
 using VertexId = int;
 constexpr int INVALID_ID = -1;
 constexpr int DEFAULT_DEPTH = 0;
-constexpr float FULL_P = 100.0;
 
 enum {
   EDGE_COLOR_GRAY = 0,
@@ -72,6 +69,8 @@ class Edge {
 class Vertex {
  public:
   explicit Vertex(const VertexId& inpId) : id_(inpId) {}
+  Vertex(const VertexId& inpId, const Depth& inpDepth)
+      : id_(inpId), depth_(inpDepth) {}
 
   void addEdgeId(const EdgeId& edgeId) {
     assert(!containEdge(edgeId) && "ERROR: vertex already contain edge");
@@ -110,31 +109,6 @@ class Vertex {
 
 class Graph {
  public:
-  void generateBranch(const VertexId& vertexSrcId,
-                      const Depth& inpDepth,
-                      Depth nowDepth,
-                      int new_vertices_num) {
-    if (nowDepth > 0) {
-      float p = FULL_P * nowDepth / inpDepth;
-      for (int j = 0; j < new_vertices_num; j++) {
-        if (p >= rand() % 100) {
-          const VertexId vertexNewId = addVertex();
-          addEdge(vertexSrcId, vertexNewId);
-          generateBranch(vertexNewId, inpDepth, nowDepth - 1, new_vertices_num);
-        }
-      }
-    }
-  }
-
-  void generate(const Depth& depth, int new_vertices_num) {
-    std::srand(std::time(nullptr));
-    const VertexId vertexSrcId = addVertex();
-
-    for (int j = 0; j < new_vertices_num; j++) {
-      generateBranch(vertexSrcId, depth, depth - 1, new_vertices_num);
-    }
-  }
-
   EdgeId addEdge(const VertexId& vertexSrcId, const VertexId& vertexTrgId) {
     assert(containVertex(vertexSrcId) && "ERROR: Vertex doesn't exists");
     assert(containVertex(vertexTrgId) && "ERROR: vertex doesn't exists");
@@ -169,6 +143,12 @@ class Graph {
   VertexId addVertex() {
     const VertexId newVertexId = generateVertexId();
     vertices_.emplace(newVertexId, newVertexId);
+    return newVertexId;
+  }
+
+  VertexId addVertex(Depth depth) {
+    const VertexId newVertexId = generateVertexId();
+    vertices_.emplace(newVertexId, Vertex(newVertexId, depth));
     return newVertexId;
   }
 

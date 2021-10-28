@@ -2,7 +2,8 @@
 #include <fstream>
 #include <iostream>
 #include <unordered_set>
-#include "graph.hpp"
+//#include "graph.hpp"
+#include "graphGenerator.hpp"
 
 void writeGraphJSON(const Graph& graph, const std::string& filename) {
   std::ofstream json(filename);
@@ -16,13 +17,14 @@ void writeGraphJSON(const Graph& graph, const std::string& filename) {
 }
 
 int main() {
-  Graph graph = Graph();
-  graph.generate(2, 2);
+  GraphGenerator generator = GraphGenerator(6, 3);
+  generator.generateGraph();
+  const Graph graph = generator.getGraph();
   writeGraphJSON(graph, "graph.json");
   return 0;
 }
 
-int main_() {
+int mainTask2() {
   Graph graph = Graph();
   const int edgesCount = 18;
   const int verticesCount = 14;

@@ -1,0 +1,80 @@
+<html>
+<head>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.16.1/vis.css" type="text/css" />
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.16.1/vis-network.min.js"> </script>
+<center>
+<h1></h1>
+</center>
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+
+<style type="text/css">
+
+        #mynetwork {
+            width: 100%;
+            height: 100%;
+            background-color: #ffffff;
+            border: 1px solid lightgray;
+            position: relative;
+            float: left;
+        }
+
+        
+
+        
+
+        
+</style>
+
+</head>
+
+<body>
+<div id = "mynetwork"></div>
+
+
+<script type="text/javascript">
+
+    // initialize global variables.
+    var edges;
+    var nodes;
+    var network; 
+    var container;
+    var options, data;
+
+    
+    // This method is responsible for drawing the graph, returns the drawn network
+    function drawGraph() {
+        var container = document.getElementById('mynetwork');
+        
+        
+
+        // parsing and collecting nodes and edges from the python
+        nodes = new vis.DataSet([{"color": "#dd4b39", "id": 0, "label": 0, "neighbor_count": 3, "shape": "dot", "size": 20, "title": "Node 0 neighbors:\u003cbr\u003e{1, 11, 12}"}, {"id": 1, "label": 1, "neighbor_count": 3, "shape": "dot", "size": 20, "title": "Node 1 neighbors:\u003cbr\u003e{2, 10, 7}"}, {"id": 2, "label": 2, "neighbor_count": 2, "shape": "dot", "size": 20, "title": "Node 2 neighbors:\u003cbr\u003e{3, 6}"}, {"id": 3, "label": 3, "neighbor_count": 1, "shape": "dot", "size": 20, "title": "Node 3 neighbors:\u003cbr\u003e{4}"}, {"id": 4, "label": 4, "neighbor_count": 1, "shape": "dot", "size": 20, "title": "Node 4 neighbors:\u003cbr\u003e{5}"}, {"id": 5, "label": 5, "neighbor_count": 0, "shape": "dot", "size": 20, "title": "Node 5 neighbors:\u003cbr\u003eset()"}, {"id": 6, "label": 3, "neighbor_count": 0, "shape": "dot", "size": 20, "title": "Node 6 neighbors:\u003cbr\u003eset()"}, {"id": 7, "label": 2, "neighbor_count": 1, "shape": "dot", "size": 20, "title": "Node 7 neighbors:\u003cbr\u003e{8}"}, {"id": 8, "label": 3, "neighbor_count": 1, "shape": "dot", "size": 20, "title": "Node 8 neighbors:\u003cbr\u003e{9}"}, {"id": 9, "label": 4, "neighbor_count": 0, "shape": "dot", "size": 20, "title": "Node 9 neighbors:\u003cbr\u003eset()"}, {"id": 10, "label": 2, "neighbor_count": 0, "shape": "dot", "size": 20, "title": "Node 10 neighbors:\u003cbr\u003eset()"}, {"id": 11, "label": 1, "neighbor_count": 0, "shape": "dot", "size": 20, "title": "Node 11 neighbors:\u003cbr\u003eset()"}, {"id": 12, "label": 1, "neighbor_count": 3, "shape": "dot", "size": 20, "title": "Node 12 neighbors:\u003cbr\u003e{21, 19, 13}"}, {"id": 13, "label": 2, "neighbor_count": 2, "shape": "dot", "size": 20, "title": "Node 13 neighbors:\u003cbr\u003e{17, 14}"}, {"id": 14, "label": 3, "neighbor_count": 1, "shape": "dot", "size": 20, "title": "Node 14 neighbors:\u003cbr\u003e{15}"}, {"id": 15, "label": 4, "neighbor_count": 1, "shape": "dot", "size": 20, "title": "Node 15 neighbors:\u003cbr\u003e{16}"}, {"id": 16, "label": 5, "neighbor_count": 0, "shape": "dot", "size": 20, "title": "Node 16 neighbors:\u003cbr\u003eset()"}, {"id": 17, "label": 3, "neighbor_count": 1, "shape": "dot", "size": 20, "title": "Node 17 neighbors:\u003cbr\u003e{18}"}, {"id": 18, "label": 4, "neighbor_count": 0, "shape": "dot", "size": 20, "title": "Node 18 neighbors:\u003cbr\u003eset()"}, {"id": 19, "label": 2, "neighbor_count": 1, "shape": "dot", "size": 20, "title": "Node 19 neighbors:\u003cbr\u003e{20}"}, {"id": 20, "label": 3, "neighbor_count": 0, "shape": "dot", "size": 20, "title": "Node 20 neighbors:\u003cbr\u003eset()"}, {"id": 21, "label": 2, "neighbor_count": 1, "shape": "dot", "size": 20, "title": "Node 21 neighbors:\u003cbr\u003e{22}"}, {"id": 22, "label": 3, "neighbor_count": 2, "shape": "dot", "size": 20, "title": "Node 22 neighbors:\u003cbr\u003e{24, 23}"}, {"id": 23, "label": 4, "neighbor_count": 0, "shape": "dot", "size": 20, "title": "Node 23 neighbors:\u003cbr\u003eset()"}, {"id": 24, "label": 4, "neighbor_count": 0, "shape": "dot", "size": 20, "title": "Node 24 neighbors:\u003cbr\u003eset()"}]);
+        edges = new vis.DataSet([{"arrows": "to", "color": "#000000", "from": 0, "size": 0.1, "to": 1}, {"arrows": "to", "color": "#000000", "from": 1, "size": 0.1, "to": 2}, {"arrows": "to", "color": "#000000", "from": 2, "size": 0.1, "to": 3}, {"arrows": "to", "color": "#000000", "from": 3, "size": 0.1, "to": 4}, {"arrows": "to", "color": "#000000", "from": 4, "size": 0.1, "to": 5}, {"arrows": "to", "color": "#000000", "from": 2, "size": 0.1, "to": 6}, {"arrows": "to", "color": "#000000", "from": 1, "size": 0.1, "to": 7}, {"arrows": "to", "color": "#000000", "from": 7, "size": 0.1, "to": 8}, {"arrows": "to", "color": "#000000", "from": 8, "size": 0.1, "to": 9}, {"arrows": "to", "color": "#000000", "from": 1, "size": 0.1, "to": 10}, {"arrows": "to", "color": "#000000", "from": 0, "size": 0.1, "to": 11}, {"arrows": "to", "color": "#000000", "from": 0, "size": 0.1, "to": 12}, {"arrows": "to", "color": "#000000", "from": 12, "size": 0.1, "to": 13}, {"arrows": "to", "color": "#000000", "from": 13, "size": 0.1, "to": 14}, {"arrows": "to", "color": "#000000", "from": 14, "size": 0.1, "to": 15}, {"arrows": "to", "color": "#000000", "from": 15, "size": 0.1, "to": 16}, {"arrows": "to", "color": "#000000", "from": 13, "size": 0.1, "to": 17}, {"arrows": "to", "color": "#000000", "from": 17, "size": 0.1, "to": 18}, {"arrows": "to", "color": "#000000", "from": 12, "size": 0.1, "to": 19}, {"arrows": "to", "color": "#000000", "from": 19, "size": 0.1, "to": 20}, {"arrows": "to", "color": "#000000", "from": 12, "size": 0.1, "to": 21}, {"arrows": "to", "color": "#000000", "from": 21, "size": 0.1, "to": 22}, {"arrows": "to", "color": "#000000", "from": 22, "size": 0.1, "to": 23}, {"arrows": "to", "color": "#000000", "from": 22, "size": 0.1, "to": 24}]);
+
+        // adding nodes and edges to the graph
+        data = {nodes: nodes, edges: edges};
+
+        var options = {"nodes": {"color": {"border": "rgba(0,0,0,1)", "highlight": {"border": "rgba(0,0,0,1)", "background": "rgba(255,199,143,1)"}, "hover": {"border": "rgba(233,96,64,1)"}}, "font": {"color": "rgba(0,0,0,1)", "size": 15, "background": "rgba(0,0,0,0)", "strokeWidth": 7, "strokeColor": "rgba(255,220,136,1)"}, "shapeProperties": {"borderRadius": 5}, "size": 30}, "physics": {"barnesHut": {"gravitationalConstant": -2000, "springLength": 10}, "minVelocity": 1.39}};
+        
+        
+
+        
+
+        network = new vis.Network(container, data, options);
+	 
+        
+
+
+        
+
+        return network;
+
+    }
+
+    drawGraph();
+
+</script>
+</body>
+</html>
