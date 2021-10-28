@@ -18,6 +18,7 @@ class GraphGenerator {
   void generateGraph() {
     generateGrayEdges();
     generateGreenEdges();
+    generateBlueEdges();
   }
 
   const Graph& getGraph() const { return graph_; }
@@ -64,9 +65,37 @@ class GraphGenerator {
 
   void generateGreenEdges() {
     float prob = getColorProbability(EDGE_COLOR_GREEN);
-    for (const auto& vertexId : graph_.getVertexIds()) {
+    for (const auto& [vertexId, vertex] : graph_.getVertices()) {
       if (itHappened(prob)) {
         graph_.addEdge(vertexId, vertexId, EDGE_COLOR_GREEN);
+      }
+    }
+  }
+
+  void generateBlueEdges() {
+    float prob = getColorProbability(EDGE_COLOR_BLUE);
+    for (Depth depth = 1; depth < graphDepth_; depth++) {
+      const std::vector<VertexId> vertexIds = graph_.getVertexIdsByDepth(depth);
+      if (vertexIds.size() > 1) {
+        VertexId maxVertexId = 0;
+        for (const auto& vertexId : vertexIds) {
+          if (vertexId > maxVertexId) {
+            maxVertexId = vertexId;
+          }
+        }
+
+        for (const VertexId& vertexSrcId : vertexIds) {
+          if (vertexSrcId < maxVertexId && itHappened(prob)) {
+            VertexId nearestVertexTrgId = maxVertexId;
+            for (const VertexId& vertexTrgId : vertexIds) {
+              if (vertexTrgId > vertexSrcId &&
+                  vertexTrgId < nearestVertexTrgId) {
+                nearestVertexTrgId = vertexTrgId;
+              }
+            }
+            graph_.addEdge(vertexSrcId, nearestVertexTrgId, EDGE_COLOR_BLUE);
+          }
+        }
       }
     }
   }

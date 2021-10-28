@@ -3,7 +3,7 @@ import json
 
 root0 = '/Users/gleb/Projects/C:C++/msu_course_cpp_323/'
 root = root0 + '02_knight_and_princess/gleb_skryabin/'
-vertexSize = 16
+vertexSize = 20
 nullVertexColor = '#dd4b39'
 defaultVertexColor = '#99ddff'
 edgeColors = {'gray': '#595959', 'green': '#5cd65c',
@@ -35,7 +35,7 @@ drawOptions = '''{
     },
     "physics": {
         "barnesHut": {
-            "gravitationalConstant": -1000,
+            "gravitationalConstant": -1500,
             "springLength": 10
         },
         "minVelocity": 1.39

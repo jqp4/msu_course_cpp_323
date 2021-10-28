@@ -171,14 +171,25 @@ class Graph {
     return edges_.find(edgeId) != edges_.end();
   }
 
+  const std::unordered_map<VertexId, Vertex>& getVertices() {
+    return vertices_;
+  }
+
   std::vector<VertexId> getVertexIds() {
-    std::vector<VertexId> ids(vertices_.size());
-    auto key_selector = [](auto pair) { return pair.first; };
-    transform(vertices_.begin(), vertices_.end(), ids.begin(), key_selector);
-    // for (const auto& [vertexId, _] : vertices_) {
-    //   ids.push_back(vertexId);
-    // }
-    return ids;
+    std::vector<VertexId> vertexIds(vertices_.size());
+    auto selector = [](auto pair) { return pair.first; };
+    transform(vertices_.begin(), vertices_.end(), vertexIds.begin(), selector);
+    return vertexIds;
+  }
+
+  std::vector<VertexId> getVertexIdsByDepth(const Depth& depth) {
+    std::vector<VertexId> vertexIds;
+    for (const auto& [vertexId, vertex] : vertices_) {
+      if (vertex.getDepth() == depth) {
+        vertexIds.push_back(vertexId);
+      }
+    }
+    return vertexIds;
   }
 
   std::string toJSON() const {
