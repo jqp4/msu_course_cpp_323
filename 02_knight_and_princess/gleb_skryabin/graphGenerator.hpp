@@ -4,10 +4,8 @@
 #include <ctime>
 #include <unordered_map>
 #include <unordered_set>
+#include <vector>
 #include "graph.hpp"
-
-constexpr float FULL_P_FLOAT = 100.0;
-constexpr int FULL_P_INT = 100;
 
 class GraphGenerator {
  public:
@@ -18,24 +16,57 @@ class GraphGenerator {
   }
 
   void generateGraph() {
-    const VertexId vertexSrcId = graph_.addVertex();
-    generateBranch(vertexSrcId, graphDepth_ - 1);
+    generateGrayEdges();
+    generateGreenEdges();
   }
 
   const Graph& getGraph() const { return graph_; }
 
  private:
-  /// Рекурсивная функция генерации ветки графа (в начале граф генерируется как
-  /// дерево глубиной graphDepth_)
-  void generateBranch(const VertexId& vertexSrcId, const Depth& nowDepth) {
+  bool itHappened(float probability) {
+    return probability >= float(rand()) / RAND_MAX;
+  }
+
+  float getColorProbability(const EdgeColor& color) {
+    switch (color) {
+      case EDGE_COLOR_GREEN:
+        return 0.1;
+      case EDGE_COLOR_BLUE:
+        return 0.25;
+      case EDGE_COLOR_RED:
+        return 0.33;
+      default:
+        std::runtime_error("Invalid edge color id");
+        return 0.0;
+    }
+  }
+
+  void generateGrayEdges() {
+    const VertexId vertexSrcId = graph_.addVertex();
+    generateGrayBranches(vertexSrcId, graphDepth_ - 1);
+  }
+
+  /// Рекурсивная функция генерации ветки графа, только серые ребра (в начале
+  /// граф генерируется как дерево глубиной graphDepth_)
+  void generateGrayBranches(const VertexId& vertexSrcId,
+                            const Depth& nowDepth) {
     if (nowDepth > 0) {
-      float p = FULL_P_FLOAT * nowDepth / graphDepth_;
+      float prob = float(nowDepth) / graphDepth_;
       for (int j = 0; j < newVerticesNum_; j++) {
-        if (p >= rand() % FULL_P_INT) {
+        if (itHappened(prob)) {
           const VertexId vertexNewId = graph_.addVertex(graphDepth_ - nowDepth);
-          graph_.addEdge(vertexSrcId, vertexNewId);
-          generateBranch(vertexNewId, nowDepth - 1);
+          graph_.addEdge(vertexSrcId, vertexNewId, EDGE_COLOR_GRAY);
+          generateGrayBranches(vertexNewId, nowDepth - 1);
         }
+      }
+    }
+  }
+
+  void generateGreenEdges() {
+    float prob = getColorProbability(EDGE_COLOR_GREEN);
+    for (const auto& vertexId : graph_.getVertexIds()) {
+      if (itHappened(prob)) {
+        graph_.addEdge(vertexId, vertexId, EDGE_COLOR_GREEN);
       }
     }
   }

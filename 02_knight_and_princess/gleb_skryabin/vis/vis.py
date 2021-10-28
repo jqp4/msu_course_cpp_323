@@ -3,10 +3,13 @@ import json
 
 root0 = '/Users/gleb/Projects/C:C++/msu_course_cpp_323/'
 root = root0 + '02_knight_and_princess/gleb_skryabin/'
-black = '#000000'
-red = '#dd4b39'
+vertexSize = 16
+nullVertexColor = '#dd4b39'
+defaultVertexColor = '#99ddff'
+edgeColors = {'gray': '#595959', 'green': '#5cd65c',
+              'blue': '#33ccff', 'yellow': '#e6e600', 'red': '#dd4b39'}
 
-options = '''{
+drawOptions = '''{
     "nodes": {
         "color": {
             "border": "rgba(0,0,0,1)",
@@ -32,7 +35,7 @@ options = '''{
     },
     "physics": {
         "barnesHut": {
-            "gravitationalConstant": -2000,
+            "gravitationalConstant": -1000,
             "springLength": 10
         },
         "minVelocity": 1.39
@@ -46,13 +49,12 @@ def generateGraph():
         data = json.load(json_file)
 
     for v in data['vertices']:
-        if v['id'] == 0:
-            net.add_node(v['id'], label=v['depth'], size=20, color=red)
-        net.add_node(v['id'], label=v['depth'], size=20)
+        c = nullVertexColor if v['id'] == 0 else defaultVertexColor
+        net.add_node(v['id'], label=v['depth'], size=vertexSize, color=c)
 
     for e in data['edges']:
         vs = e['vertex_ids']
-        net.add_edge(vs[0], vs[1], size=0.1, color=black)
+        net.add_edge(vs[0], vs[1], color=edgeColors[e['color']])
 
     neighbor_map = net.get_adj_list()
     for node in net.nodes:
@@ -65,7 +67,7 @@ def generateGraph():
 
 def main():
     net = generateGraph()
-    net.set_options(options)
+    net.set_options(drawOptions)
     # net.show_buttons(filter_=['physics'])
     net.show(root + 'vis/graph.html')
 
