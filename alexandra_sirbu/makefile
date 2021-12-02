@@ -1,3 +1,5 @@
 all:	
+	clang-format -i -style=Chromium *.hpp
 	clang-format -i -style=Chromium *.cpp
-	clang++ hello_world.cpp -o run -std=c++17
+	clang++ main.cpp -o run -std=c++17
+	./run
