@@ -69,7 +69,7 @@ def main():
     net = generateGraph()
     net.set_options(drawOptions)
     # net.show_buttons(filter_=['physics'])
-    net.show(root + 'vis/graph.html')
+    net.show(root + 'graph.html')
 
 
 if __name__ == '__main__':

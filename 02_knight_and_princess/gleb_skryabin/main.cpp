@@ -2,7 +2,6 @@
 #include <fstream>
 #include <iostream>
 #include <unordered_set>
-//#include "graph.hpp"
 #include "graphGenerator.hpp"
 
 void writeGraphJSON(const Graph& graph, const std::string& filename) {
@@ -17,46 +16,11 @@ void writeGraphJSON(const Graph& graph, const std::string& filename) {
 }
 
 int main() {
-  GraphGenerator generator = GraphGenerator(8, 3);
+  int inputDepth = 7;
+  int newVerticesNum = 3;
+  GraphGenerator generator = GraphGenerator(inputDepth, newVerticesNum);
   generator.generateGraph();
   const Graph graph = generator.getGraph();
-  writeGraphJSON(graph, "graph.json");
-  return 0;
-}
-
-int mainTask2() {
-  Graph graph = Graph();
-  const int edgesCount = 18;
-  const int verticesCount = 14;
-  const std::array<std::pair<int, int>, edgesCount> inputEdges = {{
-      {0, 1},
-      {0, 2},
-      {0, 3},
-      {1, 4},
-      {1, 5},
-      {1, 6},
-      {2, 7},
-      {2, 8},
-      {3, 9},
-      {4, 10},
-      {5, 10},
-      {6, 10},
-      {7, 11},
-      {8, 11},
-      {9, 12},
-      {10, 13},
-      {11, 13},
-      {12, 13},
-  }};
-
-  for (int i = 0; i < verticesCount; i++) {
-    graph.addVertex();
-  }
-
-  for (const auto& [vertexSrcId, vertexTrgId] : inputEdges) {
-    graph.addEdge(vertexSrcId, vertexTrgId);
-  }
-
   writeGraphJSON(graph, "graph.json");
   return 0;
 }
