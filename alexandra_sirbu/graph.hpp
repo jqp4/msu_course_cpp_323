@@ -77,7 +77,7 @@ class Graph {
 
     return newVertexId;
   }
-  
+
   EdgeId add_edge(const VertexId& from_vertex_id,
                   const VertexId& to_vertex_id) {
     const EdgeId newEdgeId = generateEdgeId();
