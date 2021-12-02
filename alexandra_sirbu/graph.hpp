@@ -113,7 +113,7 @@ class Graph {
       json += pEdgePair->second.toJSON();
     }
 
-    json += "]}";
+    json += "]}\n";
 
     return json;
   }
