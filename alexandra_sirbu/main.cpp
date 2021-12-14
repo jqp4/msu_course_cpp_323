@@ -4,16 +4,16 @@
 
 constexpr int kVerticesCount = 14;
 
-void writeGraphJSON(const Graph& graph, const std::string& filename) {
-  std::ofstream json(filename);
-  if (json.is_open()) {
-    json << graph.toJSON();
-    json.close();
-    std::cout << "Done! :)\n";
-  } else {
-    std::runtime_error("Unable to open file :(");
-  }
-}
+// void writeGraphJSON(const Graph& graph, const std::string& filename) {
+//   std::ofstream json(filename);
+//   if (json.is_open()) {
+//     json << graph.toJSON();
+//     json.close();
+//     std::cout << "Done! :)\n";
+//   } else {
+//     throw std::runtime_error("Unable to open file :(");
+//   }
+// }
 
 int main() {
   auto graph = Graph();
@@ -41,7 +41,7 @@ int main() {
   graph.add_edge(11, 13);
   graph.add_edge(12, 13);  // 17
 
-  writeGraphJSON(graph, "graph.json");
+  // writeGraphJSON(graph, "graph.json");
 
   return 0;
 }
