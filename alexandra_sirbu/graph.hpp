@@ -34,8 +34,7 @@ class Graph {
   VertexId add_vertex() {
     const VertexId newVertexId = generateVertexId();
     vertices_.emplace(newVertexId, newVertexId);
-    std::unordered_set<EdgeId> emptySet;
-    connectivityList_.emplace(newVertexId, emptySet);
+    connectivityList_.emplace(newVertexId, std::unordered_set<EdgeId>());
 
     return newVertexId;
   }
@@ -49,18 +48,6 @@ class Graph {
     connectivityList_.at(to_vertex_id).insert(newEdgeId);
 
     return newEdgeId;
-  }
-
-  //функция для проверки правильности. удалю с началом 3го задания
-  void debug() const {
-    std::cout << "Connectivity List:\n";
-    for (const auto& [vid, eidSet] : connectivityList_) {
-      std::cout << vid << ": [";
-      for (const auto& eid : eidSet) {
-        std::cout << eid << ", ";
-      }
-      std::cout << "]\n";
-    }
   }
 
  private:
