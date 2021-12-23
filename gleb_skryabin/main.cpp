@@ -1,7 +1,5 @@
-#include <array>
 #include <fstream>
 #include <iostream>
-#include <unordered_set>
 #include "graphGenerator.hpp"
 #include "graphPrinter.hpp"
 
@@ -26,5 +24,3 @@ int main() {
   writeGraphJSON(graph, "graph.json");
   return 0;
 }
-
-// python3 vis/vis.py

@@ -11,37 +11,28 @@
 using Depth = int;
 using EdgeId = int;
 using VertexId = int;
-using EdgeColor = int;
 constexpr int INVALID_ID = -1;
 constexpr int DEFAULT_DEPTH = 0;
 
-enum {
-  EDGE_COLOR_GRAY = 0,
-  EDGE_COLOR_GREEN = 1,
-  EDGE_COLOR_BLUE = 2,
-  EDGE_COLOR_YELLOW = 3,
-  EDGE_COLOR_RED = 4
-};
-
 class Edge {
  public:
-  enum class Color { Grey, Green, Yellow, Red };
+  enum class Colors { Grey, Green, Blue, Yellow, Red };
 
   Edge(const EdgeId& inpId,
        const VertexId& vertexSrcId,
        const VertexId& vertexTrgId,
-       const EdgeColor& color)
+       const Colors& color)
       : id_(inpId), vertexIds_(vertexSrcId, vertexTrgId), color_(color) {}
 
   const EdgeId& getId() const { return id_; }
-  const Depth& getColor() const { return color_; }
+  const Edge::Colors& getColor() const { return color_; }
   const std::pair<VertexId, VertexId>& getVertexIds() const {
     return vertexIds_;
   }
 
  private:
   const EdgeId id_ = INVALID_ID;
-  const EdgeColor color_ = EDGE_COLOR_GRAY;
+  const Edge::Colors color_ = Edge::Colors::Grey;
   const std::pair<VertexId, VertexId> vertexIds_ = {INVALID_ID, INVALID_ID};
 };
 
@@ -73,7 +64,7 @@ class Graph {
  public:
   EdgeId addEdge(const VertexId& vertexSrcId,
                  const VertexId& vertexTrgId,
-                 const EdgeColor& color = EDGE_COLOR_GRAY) {
+                 const Edge::Colors& color = Edge::Colors::Grey) {
     const EdgeId newEdgeId = generateEdgeId();
     if (vertexSrcId != vertexTrgId) {
       assert(containVertex(vertexSrcId) && "ERROR: Vertex doesn't exists");
@@ -141,16 +132,6 @@ class Graph {
     std::vector<VertexId> vertexIds(vertices_.size());
     auto selector = [](auto pair) { return pair.first; };
     transform(vertices_.begin(), vertices_.end(), vertexIds.begin(), selector);
-    return vertexIds;
-  }
-
-  std::vector<VertexId> getVertexIdsByDepth(const Depth& depth) const {
-    std::vector<VertexId> vertexIds;
-    for (const auto& [vertexId, vertex] : vertices_) {
-      if (vertex.getDepth() == depth) {
-        vertexIds.push_back(vertexId);
-      }
-    }
     return vertexIds;
   }
 

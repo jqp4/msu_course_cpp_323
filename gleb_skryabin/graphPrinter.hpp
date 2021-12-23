@@ -9,20 +9,18 @@
 
 class GraphPrinter {
  public:
-  std::string edgeColorToStr(const EdgeColor& color) const {
+  std::string edgeColorToStr(const Edge::Colors& color) const {
     switch (color) {
-      case EDGE_COLOR_GRAY:
+      case Edge::Colors::Grey:
         return "gray";
-      case EDGE_COLOR_GREEN:
+      case Edge::Colors::Green:
         return "green";
-      case EDGE_COLOR_BLUE:
-        return "blue";
-      case EDGE_COLOR_YELLOW:
+      case Edge::Colors::Yellow:
         return "yellow";
-      case EDGE_COLOR_RED:
+      case Edge::Colors::Red:
         return "red";
       default:
-        throw std::runtime_error("Invalid edge color id");
+        throw std::runtime_error("Invalid Edge::Colors value");
         return "-";
     }
   }

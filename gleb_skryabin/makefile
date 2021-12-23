@@ -5,4 +5,4 @@ all:
 	clang++ main.cpp -o run -std=c++17 -Werror
 	./run
 
-	
+	python3 vis/vis.py
