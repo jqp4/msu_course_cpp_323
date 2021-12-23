@@ -10,28 +10,41 @@
 
 class GraphGenerator {
  public:
-  GraphGenerator(const Depth& depth, int newVerticesNum)
-      : graphDepth_(depth), newVerticesNum_(newVerticesNum) {
+  struct Params {
+   public:
+    explicit Params(Depth depth = 0, int newVerticesCount = 0)
+        : depth_(depth), newVerticesCount_(newVerticesCount) {}
+
+    Depth depth() const { return depth_; }
+    int newVerticesCount() const { return newVerticesCount_; }
+
+   private:
+    Depth depth_ = 0;
+    int newVerticesCount_ = 0;
+  };
+
+  explicit GraphGenerator(const Params& params = Params()) : params_(params) {}
+
+  Graph generate() {
     std::srand(std::time(nullptr));
-    graph_ = Graph();
-  }
+    Graph graph = Graph();
+    const VertexId vertexSrcId = graph.addVertex();
 
-  void generateGraph() {
-    generateGrayEdges();
-    generateGreenEdges();
-    setVertexIdsByDepth();
-    generateBlueEdges();
-    generateYellowEdges();
-  }
+    generateGrayEdges(graph, vertexSrcId);
+    generateGreenEdges(graph);
+    setVertexIdsByDepth(graph);
+    generateBlueEdges(graph);
+    generateYellowEdges(graph);
 
-  const Graph& getGraph() const { return graph_; }
+    return graph;
+  }
 
  private:
   bool itHappened(float probability) {
-    return probability >= float(rand()) / RAND_MAX;
+    return probability >= float(rand() % 100) / 100;
   }
 
-  float getColorProbability(const EdgeColor& color) {
+  float getColorProbability(const EdgeColor& color) const {
     switch (color) {
       case EDGE_COLOR_GREEN:
         return 0.1;
@@ -40,50 +53,51 @@ class GraphGenerator {
       case EDGE_COLOR_RED:
         return 0.33;
       default:
-        std::runtime_error("Invalid edge color id");
+        throw std::runtime_error("Invalid edge color id");
         return 0.0;
     }
   }
 
-  void setVertexIdsByDepth() {
-    for (Depth depth = 1; depth < graphDepth_; depth++) {
-      vertexIdsByDepth_.emplace(depth, graph_.getVertexIdsByDepth(depth));
+  void setVertexIdsByDepth(Graph graph) {
+    for (Depth depth = 1; depth < params_.depth(); depth++) {
+      vertexIdsByDepth_.emplace(depth, graph.getVertexIdsByDepth(depth));
     }
   }
 
-  void generateGrayEdges() {
-    const VertexId vertexSrcId = graph_.addVertex();
-    generateGrayBranches(vertexSrcId, graphDepth_ - 1);
+  void generateGrayEdges(Graph graph, VertexId vertexSrcId) {
+    generateGrayBranches(graph, vertexSrcId, params_.depth() - 1);
   }
 
   /// Рекурсивная функция генерации ветки графа, только серые ребра (в начале
-  /// граф генерируется как дерево глубиной не больше graphDepth_)
-  void generateGrayBranches(const VertexId& vertexSrcId,
+  /// граф генерируется как дерево глубиной не больше params_.depth())
+  void generateGrayBranches(Graph graph,
+                            const VertexId& vertexSrcId,
                             const Depth& nowDepth) {
     if (nowDepth > 0) {
-      float prob = float(nowDepth) / graphDepth_;
-      for (int j = 0; j < newVerticesNum_; j++) {
+      const float prob = float(nowDepth) / params_.depth();
+      for (int j = 0; j < params_.newVerticesCount(); j++) {
         if (itHappened(prob)) {
-          const VertexId vertexNewId = graph_.addVertex(graphDepth_ - nowDepth);
-          graph_.addEdge(vertexSrcId, vertexNewId, EDGE_COLOR_GRAY);
-          generateGrayBranches(vertexNewId, nowDepth - 1);
+          const VertexId vertexNewId =
+              graph.addVertex(params_.depth() - nowDepth);
+          graph.addEdge(vertexSrcId, vertexNewId, EDGE_COLOR_GRAY);
+          generateGrayBranches(graph, vertexNewId, nowDepth - 1);
         }
       }
     }
   }
 
-  void generateGreenEdges() {
-    float prob = getColorProbability(EDGE_COLOR_GREEN);
-    for (const auto& [vertexId, vertex] : graph_.getVertices()) {
+  void generateGreenEdges(Graph graph) {
+    const float prob = getColorProbability(EDGE_COLOR_GREEN);
+    for (const auto& [vertexId, vertex] : graph.getVertices()) {
       if (itHappened(prob)) {
-        graph_.addEdge(vertexId, vertexId, EDGE_COLOR_GREEN);
+        graph.addEdge(vertexId, vertexId, EDGE_COLOR_GREEN);
       }
     }
   }
 
-  void generateBlueEdges() {
-    float prob = getColorProbability(EDGE_COLOR_BLUE);
-    for (Depth depth = 1; depth < graphDepth_; depth++) {
+  void generateBlueEdges(Graph graph) {
+    const float prob = getColorProbability(EDGE_COLOR_BLUE);
+    for (Depth depth = 1; depth < params_.depth(); depth++) {
       const std::vector<VertexId> vertexIds = vertexIdsByDepth_.at(depth);
       if (vertexIds.size() > 1) {
         VertexId maxVertexId =
@@ -98,39 +112,18 @@ class GraphGenerator {
                 nearestVertexTrgId = vertexTrgId;
               }
             }
-            graph_.addEdge(vertexSrcId, nearestVertexTrgId, EDGE_COLOR_BLUE);
+            graph.addEdge(vertexSrcId, nearestVertexTrgId, EDGE_COLOR_BLUE);
           }
         }
       }
     }
   }
 
-  void generateYellowEdges() {
-    float prob = getColorProbability(EDGE_COLOR_YELLOW);
-    for (Depth depth = 1; depth < graphDepth_; depth++) {
-      const std::vector<VertexId> vertexIds = vertexIdsByDepth_.at(depth);
-      if (vertexIds.size() > 1) {
-        VertexId maxVertexId =
-            *std::max_element(vertexIds.begin(), vertexIds.end());
-        for (const VertexId& vertexSrcId : vertexIds) {
-          if (vertexSrcId != maxVertexId && itHappened(prob)) {
-            // Поиск соседней вершины для соединения
-            VertexId nearestVertexTrgId = maxVertexId;
-            for (const VertexId& vertexTrgId : vertexIds) {
-              if (vertexTrgId > vertexSrcId &&
-                  vertexTrgId < nearestVertexTrgId) {
-                nearestVertexTrgId = vertexTrgId;
-              }
-            }
-            graph_.addEdge(vertexSrcId, nearestVertexTrgId, EDGE_COLOR_YELLOW);
-          }
-        }
-      }
-    }
+  void generateYellowEdges(Graph graph) {
+    // const float prob = getColorProbability(EDGE_COLOR_YELLOW);
   }
 
-  Graph graph_;
-  const Depth graphDepth_ = 0;
-  const int newVerticesNum_ = 0;
+  
+  const Params params_ = Params();
   std::unordered_map<Depth, std::vector<VertexId>> vertexIdsByDepth_;
 };
