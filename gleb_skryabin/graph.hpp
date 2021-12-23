@@ -6,6 +6,8 @@
 #include <unordered_set>
 #include <vector>
 
+#pragma once
+
 using Depth = int;
 using EdgeId = int;
 using VertexId = int;
@@ -23,6 +25,8 @@ enum {
 
 class Edge {
  public:
+  enum class Color { Grey, Green, Yellow, Red };
+
   Edge(const EdgeId& inpId,
        const VertexId& vertexSrcId,
        const VertexId& vertexTrgId,
@@ -33,35 +37,6 @@ class Edge {
   const Depth& getColor() const { return color_; }
   const std::pair<VertexId, VertexId>& getVertexIds() const {
     return vertexIds_;
-  }
-
-  std::string getColorStr() const {
-    switch (color_) {
-      case EDGE_COLOR_GRAY:
-        return "gray";
-      case EDGE_COLOR_GREEN:
-        return "green";
-      case EDGE_COLOR_BLUE:
-        return "blue";
-      case EDGE_COLOR_YELLOW:
-        return "yellow";
-      case EDGE_COLOR_RED:
-        return "red";
-      default:
-        std::runtime_error("Invalid edge color id");
-        return "-";
-    }
-  }
-
-  std::string toJSON() const {
-    std::string json;
-    json += "{\"id\": " + std::to_string(id_);
-    json += ",\"vertex_ids\": [";
-    json += std::to_string(vertexIds_.first) + ", ";
-    json += std::to_string(vertexIds_.second) + "],";
-    json += "\"color\": \"" + getColorStr();
-    json += "\"}";
-    return json;
   }
 
  private:
@@ -87,22 +62,6 @@ class Vertex {
   const VertexId& getId() const { return id_; }
   const Depth& getDepth() const { return depth_; }
   const std::unordered_set<EdgeId>& getEdgeIds() const { return edgeIds_; }
-
-  std::string toJSON() const {
-    std::string json;
-    json += "{\"id\": " + std::to_string(id_);
-    json += ",\"edge_ids\": [";
-
-    for (auto pEdgeId = edgeIds_.begin(); pEdgeId != edgeIds_.end();
-         pEdgeId++) {
-      json += pEdgeId != edgeIds_.begin() ? ", " : "";
-      json += std::to_string(*pEdgeId);
-    }
-
-    json += "],\"depth\": ";
-    json += std::to_string(depth_) + "}";
-    return json;
-  }
 
  private:
   const VertexId id_ = INVALID_ID;
@@ -172,18 +131,20 @@ class Graph {
     return edges_.find(edgeId) != edges_.end();
   }
 
-  const std::unordered_map<VertexId, Vertex>& getVertices() {
+  const std::unordered_map<EdgeId, Edge>& getEdges() const { return edges_; }
+
+  const std::unordered_map<VertexId, Vertex>& getVertices() const {
     return vertices_;
   }
 
-  std::vector<VertexId> getVertexIds() {
+  std::vector<VertexId> getVertexIds() const {
     std::vector<VertexId> vertexIds(vertices_.size());
     auto selector = [](auto pair) { return pair.first; };
     transform(vertices_.begin(), vertices_.end(), vertexIds.begin(), selector);
     return vertexIds;
   }
 
-  std::vector<VertexId> getVertexIdsByDepth(const Depth& depth) {
+  std::vector<VertexId> getVertexIdsByDepth(const Depth& depth) const {
     std::vector<VertexId> vertexIds;
     for (const auto& [vertexId, vertex] : vertices_) {
       if (vertex.getDepth() == depth) {
@@ -191,26 +152,6 @@ class Graph {
       }
     }
     return vertexIds;
-  }
-
-  std::string toJSON() const {
-    std::string json;
-    json = "{\n\"vertices\": [\n";
-    for (auto pVertexPair = vertices_.begin(); pVertexPair != vertices_.end();
-         pVertexPair++) {
-      json += pVertexPair != vertices_.begin() ? ",\n" : "";
-      json += pVertexPair->second.toJSON();
-    }
-
-    json += "\n ],\n\"edges\": [\n";
-    for (auto pEdgePair = edges_.begin(); pEdgePair != edges_.end();
-         pEdgePair++) {
-      json += pEdgePair != edges_.begin() ? ",\n" : "";
-      json += pEdgePair->second.toJSON();
-    }
-
-    json += "\n]\n}\n";
-    return json;
   }
 
  private:

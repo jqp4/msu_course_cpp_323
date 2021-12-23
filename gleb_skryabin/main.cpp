@@ -3,11 +3,13 @@
 #include <iostream>
 #include <unordered_set>
 #include "graphGenerator.hpp"
+#include "graphPrinter.hpp"
 
 void writeGraphJSON(const Graph& graph, const std::string& filename) {
+  GraphPrinter graphPrinter;
   std::ofstream json(filename);
   if (json.is_open()) {
-    json << graph.toJSON();
+    json << graphPrinter.graphToJSON(graph);
     json.close();
     std::cout << "Graph is written to " << filename << std::endl;
   } else {
@@ -16,11 +18,10 @@ void writeGraphJSON(const Graph& graph, const std::string& filename) {
 }
 
 int main() {
-  int inputDepth = 7;
-  int newVerticesNum = 3;
-
-  GraphGenerator generator =
-      GraphGenerator(GraphGenerator::Params{inputDepth, newVerticesNum});
+  const int inputDepth = 7;
+  const int newVerticesNum = 3;
+  const auto params = GraphGenerator::Params{inputDepth, newVerticesNum};
+  GraphGenerator generator = GraphGenerator(params);
   const Graph graph = generator.generate();
   writeGraphJSON(graph, "graph.json");
   return 0;

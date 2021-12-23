@@ -3,6 +3,7 @@
 #include <array>
 #include <cstdlib>
 #include <ctime>
+#include <iostream>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -23,33 +24,38 @@ class GraphGenerator {
     int newVerticesCount_ = 0;
   };
 
-  explicit GraphGenerator(const Params& params = Params()) : params_(params) {}
+  explicit GraphGenerator(const Params& params = Params()) : params_(params) {
+    std::srand(std::time(nullptr));
+  }
 
   Graph generate() {
-    std::srand(std::time(nullptr));
     Graph graph = Graph();
     const VertexId vertexSrcId = graph.addVertex();
-
     generateGrayEdges(graph, vertexSrcId);
+
+    auto vertexIdsByDepth = setVertexIdsByDepth(graph);
     generateGreenEdges(graph);
-    setVertexIdsByDepth(graph);
-    generateBlueEdges(graph);
-    generateYellowEdges(graph);
+
+    // generateBlueEdges(graph, vertexIdsByDepth);
+    // generateYellowEdges(graph, vertexIdsByDepth);
 
     return graph;
   }
 
  private:
-  bool itHappened(float probability) {
+  bool itHappened(float probability) const {
     return probability >= float(rand() % 100) / 100;
   }
 
-  float getColorProbability(const EdgeColor& color) const {
+  float getColorProbability(const EdgeColor& color,
+                            const Depth& depth = 0) const {
     switch (color) {
+      case EDGE_COLOR_GRAY:
+        return float(depth) / params_.depth();
       case EDGE_COLOR_GREEN:
         return 0.1;
-      case EDGE_COLOR_BLUE:
-        return 0.25;
+      case EDGE_COLOR_YELLOW:
+        return 1.0 - float(depth) / params_.depth();
       case EDGE_COLOR_RED:
         return 0.33;
       default:
@@ -58,23 +64,27 @@ class GraphGenerator {
     }
   }
 
-  void setVertexIdsByDepth(Graph graph) {
+  std::unordered_map<Depth, std::vector<VertexId>> setVertexIdsByDepth(
+      Graph graph) const {
+    std::unordered_map<Depth, std::vector<VertexId>> vertexIdsByDepth;
     for (Depth depth = 1; depth < params_.depth(); depth++) {
-      vertexIdsByDepth_.emplace(depth, graph.getVertexIdsByDepth(depth));
+      vertexIdsByDepth.emplace(depth, graph.getVertexIdsByDepth(depth));
     }
+
+    return vertexIdsByDepth;
   }
 
-  void generateGrayEdges(Graph graph, VertexId vertexSrcId) {
+  void generateGrayEdges(Graph& graph, VertexId vertexSrcId) const {
     generateGrayBranches(graph, vertexSrcId, params_.depth() - 1);
   }
 
   /// Рекурсивная функция генерации ветки графа, только серые ребра (в начале
   /// граф генерируется как дерево глубиной не больше params_.depth())
-  void generateGrayBranches(Graph graph,
+  void generateGrayBranches(Graph& graph,
                             const VertexId& vertexSrcId,
-                            const Depth& nowDepth) {
+                            const Depth& nowDepth) const {
     if (nowDepth > 0) {
-      const float prob = float(nowDepth) / params_.depth();
+      const float prob = getColorProbability(EDGE_COLOR_GRAY, nowDepth);
       for (int j = 0; j < params_.newVerticesCount(); j++) {
         if (itHappened(prob)) {
           const VertexId vertexNewId =
@@ -86,7 +96,7 @@ class GraphGenerator {
     }
   }
 
-  void generateGreenEdges(Graph graph) {
+  void generateGreenEdges(Graph& graph) {
     const float prob = getColorProbability(EDGE_COLOR_GREEN);
     for (const auto& [vertexId, vertex] : graph.getVertices()) {
       if (itHappened(prob)) {
@@ -95,35 +105,37 @@ class GraphGenerator {
     }
   }
 
-  void generateBlueEdges(Graph graph) {
-    const float prob = getColorProbability(EDGE_COLOR_BLUE);
-    for (Depth depth = 1; depth < params_.depth(); depth++) {
-      const std::vector<VertexId> vertexIds = vertexIdsByDepth_.at(depth);
-      if (vertexIds.size() > 1) {
-        VertexId maxVertexId =
-            *std::max_element(vertexIds.begin(), vertexIds.end());
-        for (const VertexId& vertexSrcId : vertexIds) {
-          if (vertexSrcId != maxVertexId && itHappened(prob)) {
-            // Поиск соседней вершины для соединения
-            VertexId nearestVertexTrgId = maxVertexId;
-            for (const VertexId& vertexTrgId : vertexIds) {
-              if (vertexTrgId > vertexSrcId &&
-                  vertexTrgId < nearestVertexTrgId) {
-                nearestVertexTrgId = vertexTrgId;
-              }
-            }
-            graph.addEdge(vertexSrcId, nearestVertexTrgId, EDGE_COLOR_BLUE);
-          }
-        }
-      }
-    }
-  }
+  // void generateBlueEdges(
+  //     Graph graph,
+  //     std::unordered_map<Depth, std::vector<VertexId>> vertexIdsByDepth) {
+  //   const float prob = getColorProbability(EDGE_COLOR_BLUE);
+  //   for (Depth depth = 1; depth < params_.depth(); depth++) {
+  //     const std::vector<VertexId> vertexIds = vertexIdsByDepth.at(depth);
+  //     if (vertexIds.size() > 1) {
+  //       VertexId maxVertexId =
+  //           *std::max_element(vertexIds.begin(), vertexIds.end());
+  //       for (const VertexId& vertexSrcId : vertexIds) {
+  //         if (vertexSrcId != maxVertexId && itHappened(prob)) {
+  //           // Поиск соседней вершины для соединения
+  //           VertexId nearestVertexTrgId = maxVertexId;
+  //           for (const VertexId& vertexTrgId : vertexIds) {
+  //             if (vertexTrgId > vertexSrcId &&
+  //                 vertexTrgId < nearestVertexTrgId) {
+  //               nearestVertexTrgId = vertexTrgId;
+  //             }
+  //           }
+  //           graph.addEdge(vertexSrcId, nearestVertexTrgId, EDGE_COLOR_BLUE);
+  //         }
+  //       }
+  //     }
+  //   }
+  // }
 
-  void generateYellowEdges(Graph graph) {
-    // const float prob = getColorProbability(EDGE_COLOR_YELLOW);
-  }
+  // void generateYellowEdges(
+  //     Graph graph,
+  //     std::unordered_map<Depth, std::vector<VertexId>> vertexIdsByDepth) {
+  //   // const float prob = getColorProbability(EDGE_COLOR_YELLOW);
+  // }
 
-  
   const Params params_ = Params();
-  std::unordered_map<Depth, std::vector<VertexId>> vertexIdsByDepth_;
 };
