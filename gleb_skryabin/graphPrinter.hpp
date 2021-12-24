@@ -37,10 +37,11 @@ class GraphPrinter {
     return json;
   }
 
-  std::string vertexToJSON(const Vertex& vertex) const {
+  std::string vertexToJSON(const VertexId& vertexId,
+                           const std::unordered_set<EdgeId>& edgeIds,
+                           const Depth& depth) const {
     std::string json;
-    const auto edgeIds = vertex.getEdgeIds();
-    json += "{\"id\": " + std::to_string(vertex.getId());
+    json += "{\"id\": " + std::to_string(vertexId);
     json += ", \"edge_ids\": [";
 
     for (auto edgeId = edgeIds.begin(); edgeId != edgeIds.end(); edgeId++) {
@@ -49,20 +50,21 @@ class GraphPrinter {
     }
 
     json += "], \"depth\": ";
-    json += std::to_string(vertex.getDepth()) + "}";
+    json += std::to_string(depth) + "}";
     return json;
   }
 
   std::string graphToJSON(const Graph& graph) const {
-    const auto vertices = graph.getVertices();
+    const auto connectivityList = graph.getConnectivityList();
     const auto edges = graph.getEdges();
 
     std::string json;
     json = "{\n\"vertices\": [\n";
-    for (auto vertexPair = vertices.begin(); vertexPair != vertices.end();
-         vertexPair++) {
-      json += vertexPair != vertices.begin() ? ",\n" : "";
-      json += vertexToJSON(vertexPair->second);
+    for (auto vertexPair = connectivityList.begin();
+         vertexPair != connectivityList.end(); vertexPair++) {
+      json += vertexPair != connectivityList.begin() ? ",\n" : "";
+      json += vertexToJSON(vertexPair->first, vertexPair->second,
+                           graph.getVertexDepth(vertexPair->first));
     }
 
     json += "\n ],\n\"edges\": [\n";

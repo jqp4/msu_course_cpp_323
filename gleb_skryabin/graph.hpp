@@ -38,26 +38,11 @@ class Edge {
 
 class Vertex {
  public:
-  Vertex(const VertexId& inpId, const Depth& inpDepth)
-      : id_(inpId), depth_(inpDepth) {}
-
-  void addEdgeId(const EdgeId& edgeId) {
-    assert(!containEdge(edgeId) && "ERROR: vertex already contain edge");
-    edgeIds_.insert(edgeId);
-  }
-
-  bool containEdge(const EdgeId& edgeId) {
-    return edgeIds_.find(edgeId) != edgeIds_.end();
-  }
-
+  explicit Vertex(const VertexId& id) : id_(id) {}
   const VertexId& getId() const { return id_; }
-  const Depth& getDepth() const { return depth_; }
-  const std::unordered_set<EdgeId>& getEdgeIds() const { return edgeIds_; }
 
  private:
-  const VertexId id_ = INVALID_ID;
-  const Depth depth_ = DEFAULT_DEPTH;
-  std::unordered_set<EdgeId> edgeIds_ = {};
+  const VertexId id_;
 };
 
 class Graph {
@@ -66,26 +51,25 @@ class Graph {
                  const VertexId& vertexTrgId,
                  const Edge::Colors& color = Edge::Colors::Grey) {
     const EdgeId newEdgeId = generateEdgeId();
+    assert(containVertex(vertexSrcId) && "ERROR: Vertex doesn't exists");
     if (vertexSrcId != vertexTrgId) {
-      assert(containVertex(vertexSrcId) && "ERROR: Vertex doesn't exists");
       assert(containVertex(vertexTrgId) && "ERROR: vertex doesn't exists");
       assert(!checkConnectoin(vertexSrcId, vertexTrgId) &&
              "ERROR: edge already exists");
 
       edges_.emplace(newEdgeId,
                      Edge(newEdgeId, vertexSrcId, vertexTrgId, color));
-      vertices_.at(vertexSrcId).addEdgeId(newEdgeId);
-      vertices_.at(vertexTrgId).addEdgeId(newEdgeId);
+      connectivityList_.at(vertexSrcId).insert(newEdgeId);
+      connectivityList_.at(vertexTrgId).insert(newEdgeId);
     } else {
-      assert(containVertex(vertexSrcId) && "ERROR: Vertex doesn't exists");
-      for (const auto& edgeId : vertices_.at(vertexSrcId).getEdgeIds()) {
+      for (const auto& edgeId : connectivityList_.at(vertexSrcId)) {
         const auto& vs = edges_.at(edgeId).getVertexIds();
         assert(vs.first != vs.second && "ERROR: edge already exists");
       }
 
       edges_.emplace(newEdgeId,
                      Edge(newEdgeId, vertexSrcId, vertexSrcId, color));
-      vertices_.at(vertexSrcId).addEdgeId(newEdgeId);
+      connectivityList_.at(vertexSrcId).insert(newEdgeId);
     }
     return newEdgeId;
   }
@@ -94,8 +78,8 @@ class Graph {
                        const VertexId& vertexTrgId) const {
     assert(containVertex(vertexSrcId) && "ERROR: Vertex doesn't exists");
     assert(containVertex(vertexTrgId) && "ERROR: vertex doesn't exists");
-    const auto& srcEdgeIds = vertices_.at(vertexSrcId).getEdgeIds();
-    const auto& trgEdgeIds = vertices_.at(vertexTrgId).getEdgeIds();
+    const auto& srcEdgeIds = connectivityList_.at(vertexSrcId);
+    const auto& trgEdgeIds = connectivityList_.at(vertexTrgId);
 
     for (const auto& srcEdgeId : srcEdgeIds) {
       for (const auto& trgEdgeId : trgEdgeIds) {
@@ -110,7 +94,10 @@ class Graph {
 
   VertexId addVertex(const Depth& depth = DEFAULT_DEPTH) {
     const VertexId newVertexId = generateVertexId();
-    vertices_.emplace(newVertexId, Vertex(newVertexId, depth));
+    connectivityList_.emplace(newVertexId, std::unordered_set<EdgeId>());
+    const Vertex newVertex = Vertex(newVertexId);
+    vertices_.emplace(newVertexId, newVertex);
+    depths_.emplace(newVertexId, depth);
     return newVertexId;
   }
 
@@ -122,10 +109,20 @@ class Graph {
     return edges_.find(edgeId) != edges_.end();
   }
 
+  Depth getVertexDepth(const VertexId& vertexId) const {
+    assert(containVertex(vertexId) && "ERROR: Vertex doesn't exists");
+    return depths_.find(vertexId)->second;
+  }
+
   const std::unordered_map<EdgeId, Edge>& getEdges() const { return edges_; }
 
   const std::unordered_map<VertexId, Vertex>& getVertices() const {
     return vertices_;
+  }
+
+  const std::unordered_map<VertexId, std::unordered_set<EdgeId>>&
+  getConnectivityList() const {
+    return connectivityList_;
   }
 
   std::vector<VertexId> getVertexIds() const {
@@ -143,4 +140,6 @@ class Graph {
 
   std::unordered_map<EdgeId, Edge> edges_;
   std::unordered_map<VertexId, Vertex> vertices_;
+  std::unordered_map<VertexId, std::unordered_set<EdgeId>> connectivityList_;
+  std::unordered_map<VertexId, Depth> depths_;
 };

@@ -44,8 +44,6 @@ class GraphGenerator {
 
  private:
   bool itHappened(float probability) const {
-    // return probability >= float(rand() % 100) / 100;
-
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> random_number(0, 100);
@@ -71,14 +69,11 @@ class GraphGenerator {
 
   void getVertexIdsByDepth(Graph graph, DepthToIds& vertexIdsByDepth) const {
     for (Depth depth = 0; depth < params_.getDepth(); depth++) {
-      std::vector<VertexId> vertexIds;
-      for (const auto& [vertexId, vertex] : graph.getVertices()) {
-        if (vertex.getDepth() == depth) {
-          vertexIds.push_back(vertexId);
-        }
-      }
+      vertexIdsByDepth.emplace(depth, std::vector<VertexId>());
+    }
 
-      vertexIdsByDepth.emplace(depth, vertexIds);
+    for (const VertexId& vertexId : graph.getVertexIds()) {
+      vertexIdsByDepth.at(graph.getVertexDepth(vertexId)).push_back(vertexId);
     }
   }
 
