@@ -110,7 +110,7 @@ class GraphGenerator {
 
   void generateYellowEdges(Graph& graph,
                            const DepthToIds& vertexIdsByDepth) const {
-    for (Depth depth = 1; depth < params_.getDepth() - 1; depth++) {
+    for (Depth depth = 1; depth < graph.getDepth() - 1; depth++) {
       const float prob = getColorProbability(Edge::Colors::Yellow, depth);
       for (const VertexId& vertexSrcId : vertexIdsByDepth.at(depth)) {
         if (itHappened(prob)) {
@@ -126,7 +126,7 @@ class GraphGenerator {
   void generateRedEdges(Graph& graph,
                         const DepthToIds& vertexIdsByDepth) const {
     const float prob = getColorProbability(Edge::Colors::Red);
-    for (Depth depth = params_.getDepth() - 1; depth > 1; depth--) {
+    for (Depth depth = graph.getDepth() - 1; depth > 1; depth--) {
       for (const VertexId& vertexSrcId : vertexIdsByDepth.at(depth)) {
         if (itHappened(prob)) {
           const auto VertexTrgIds = vertexIdsByDepth.at(depth - 2);

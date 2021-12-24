@@ -98,6 +98,10 @@ class Graph {
     const Vertex newVertex = Vertex(newVertexId);
     vertices_.emplace(newVertexId, newVertex);
     depths_.emplace(newVertexId, depth);
+    if (realDepth_ < depth) {
+      realDepth_ = depth;
+    }
+
     return newVertexId;
   }
 
@@ -113,6 +117,8 @@ class Graph {
     assert(containVertex(vertexId) && "ERROR: Vertex doesn't exists");
     return depths_.find(vertexId)->second;
   }
+
+  const Depth& getDepth() { return realDepth_; }
 
   const std::unordered_map<EdgeId, Edge>& getEdges() const { return edges_; }
 
@@ -138,6 +144,7 @@ class Graph {
   EdgeId generateEdgeId() { return nextEdgeId_++; }
   VertexId generateVertexId() { return nextVertexId_++; }
 
+  Depth realDepth_ = 0;
   std::unordered_map<EdgeId, Edge> edges_;
   std::unordered_map<VertexId, Vertex> vertices_;
   std::unordered_map<VertexId, std::unordered_set<EdgeId>> connectivityList_;
