@@ -16,7 +16,7 @@ void writeGraphJSON(const Graph& graph, const std::string& filename) {
 }
 
 int main() {
-  const int inputDepth = 7;
+  const int inputDepth = 4;
   const int newVerticesNum = 3;
   const auto params = GraphGenerator::Params{inputDepth, newVerticesNum};
   GraphGenerator generator = GraphGenerator(params);
