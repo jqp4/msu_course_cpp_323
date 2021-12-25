@@ -48,12 +48,20 @@ class Graph {
  public:
   using Depth = int;
 
+  VertexId addVertex() {
+    const VertexId newVertexId = generateVertexId();
+    connectivityList_.emplace(newVertexId, std::unordered_set<EdgeId>());
+    const Vertex newVertex = Vertex(newVertexId);
+    vertices_.emplace(newVertexId, newVertex);
+    return newVertexId;
+  }
+
   EdgeId addEdge(const VertexId& vertexSrcId,
                  const VertexId& vertexTrgId,
                  const Edge::Colors& color = Edge::Colors::Grey) {
     assert(isContainVertex(vertexSrcId) && "ERROR: Vertex doesn't exists");
     assert(isContainVertex(vertexTrgId) && "ERROR: vertex doesn't exists");
-    assert(!checkConnectoin(vertexSrcId, vertexTrgId) &&
+    assert(!checkConnection(vertexSrcId, vertexTrgId) &&
            "ERROR: edge already exists");
 
     const EdgeId newEdgeId = generateEdgeId();
@@ -63,10 +71,11 @@ class Graph {
     return newEdgeId;
   }
 
-  bool checkConnectoin(const VertexId& vertexSrcId,
+  bool checkConnection(const VertexId& vertexSrcId,
                        const VertexId& vertexTrgId) const {
     assert(isContainVertex(vertexSrcId) && "ERROR: Vertex doesn't exists");
     assert(isContainVertex(vertexTrgId) && "ERROR: vertex doesn't exists");
+
     if (vertexSrcId != vertexTrgId) {
       for (const auto& srcEdgeId : connectivityList_.at(vertexSrcId)) {
         for (const auto& trgEdgeId : connectivityList_.at(vertexTrgId)) {
@@ -87,13 +96,6 @@ class Graph {
     return false;
   }
 
-  VertexId addVertex() {
-    const VertexId newVertexId = generateVertexId();
-    connectivityList_.emplace(newVertexId, std::unordered_set<EdgeId>());
-    const Vertex newVertex = Vertex(newVertexId);
-    vertices_.emplace(newVertexId, newVertex);
-    return newVertexId;
-  }
 
   void setVertexDepth(const VertexId& vertexId, const Depth& depth) {
     verticesDepths_.emplace(vertexId, depth);

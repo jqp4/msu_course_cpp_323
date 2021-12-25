@@ -1,11 +1,4 @@
-#include <algorithm>
-#include <array>
-#include <cassert>
-#include <cstdlib>
-#include <iostream>
 #include <random>
-#include <unordered_map>
-#include <unordered_set>
 #include <vector>
 #include "graph.hpp"
 
@@ -139,7 +132,7 @@ class GraphGenerator {
       const VertexId& ParentVertexId,
       std::vector<VertexId> vertexIds) const {
     for (size_t i = 0; i < vertexIds.size(); i++) {
-      if (graph.checkConnectoin(ParentVertexId, vertexIds.at(i))) {
+      if (graph.checkConnection(ParentVertexId, vertexIds.at(i))) {
         vertexIds.erase(std::next(vertexIds.begin(), i--));
       }
     }
