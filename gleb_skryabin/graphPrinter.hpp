@@ -32,7 +32,7 @@ class GraphPrinter {
 
   std::string vertexToJSON(const VertexId& vertexId,
                            const std::unordered_set<EdgeId>& edgeIds,
-                           const Depth& depth) const {
+                           const Graph::Depth& depth) const {
     std::string json;
     json += "{\"id\": " + std::to_string(vertexId);
     json += ", \"edge_ids\": [";
