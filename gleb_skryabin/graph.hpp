@@ -1,12 +1,12 @@
-#include <assert.h>
+#pragma once
+
 #include <algorithm>
 #include <array>
+#include <cassert>
 #include <iostream>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
-
-#pragma once
 
 using Depth = int;
 using EdgeId = int;
@@ -51,9 +51,9 @@ class Graph {
                  const VertexId& vertexTrgId,
                  const Edge::Colors& color = Edge::Colors::Grey) {
     const EdgeId newEdgeId = generateEdgeId();
-    assert(containVertex(vertexSrcId) && "ERROR: Vertex doesn't exists");
+    assert(isContainVertex(vertexSrcId) && "ERROR: Vertex doesn't exists");
     if (vertexSrcId != vertexTrgId) {
-      assert(containVertex(vertexTrgId) && "ERROR: vertex doesn't exists");
+      assert(isContainVertex(vertexTrgId) && "ERROR: vertex doesn't exists");
       assert(!checkConnectoin(vertexSrcId, vertexTrgId) &&
              "ERROR: edge already exists");
 
@@ -76,49 +76,72 @@ class Graph {
 
   bool checkConnectoin(const VertexId& vertexSrcId,
                        const VertexId& vertexTrgId) const {
-    assert(containVertex(vertexSrcId) && "ERROR: Vertex doesn't exists");
-    assert(containVertex(vertexTrgId) && "ERROR: vertex doesn't exists");
-    const auto& srcEdgeIds = connectivityList_.at(vertexSrcId);
-    const auto& trgEdgeIds = connectivityList_.at(vertexTrgId);
+    if (vertexSrcId != vertexTrgId) {
+      assert(isContainVertex(vertexSrcId) && "ERROR: Vertex doesn't exists");
+      assert(isContainVertex(vertexTrgId) && "ERROR: vertex doesn't exists");
+      const auto& srcEdgeIds = connectivityList_.at(vertexSrcId);
+      const auto& trgEdgeIds = connectivityList_.at(vertexTrgId);
 
-    for (const auto& srcEdgeId : srcEdgeIds) {
-      for (const auto& trgEdgeId : trgEdgeIds) {
-        if (srcEdgeId == trgEdgeId) {
-          return true;
+      for (const auto& srcEdgeId : srcEdgeIds) {
+        for (const auto& trgEdgeId : trgEdgeIds) {
+          if (srcEdgeId == trgEdgeId) {
+            return true;
+          }
         }
+      }
+    } else {
+      for (const auto& edgeId : connectivityList_.at(vertexSrcId)) {
+        const auto& vs = edges_.at(edgeId).getVertexIds();
+        assert(vs.first != vs.second && "ERROR: edge already exists");
       }
     }
 
     return false;
   }
 
-  VertexId addVertex(const Depth& depth = DEFAULT_DEPTH) {
+  VertexId addVertex() {
     const VertexId newVertexId = generateVertexId();
     connectivityList_.emplace(newVertexId, std::unordered_set<EdgeId>());
     const Vertex newVertex = Vertex(newVertexId);
     vertices_.emplace(newVertexId, newVertex);
-    depths_.emplace(newVertexId, depth);
-    if (realDepth_ < depth) {
-      realDepth_ = depth;
-    }
-
     return newVertexId;
   }
 
-  bool containVertex(const VertexId& vertexId) const {
+  void setVertexDepth(const VertexId& vertexId, const Depth& depth) {
+    verticesDepths_.emplace(vertexId, depth);
+
+    if (depthMap_.size() > depth) {
+      depthMap_.at(depth).push_back(vertexId);
+    } else {
+      const std::vector<VertexId> newLayer = {vertexId};
+      depthMap_.push_back(newLayer);
+    }
+  }
+
+  bool isContainVertex(const VertexId& vertexId) const {
     return vertices_.find(vertexId) != vertices_.end();
   }
 
-  bool containEdge(const EdgeId& edgeId) const {
+  bool isContainEdge(const EdgeId& edgeId) const {
     return edges_.find(edgeId) != edges_.end();
   }
 
   Depth getVertexDepth(const VertexId& vertexId) const {
-    assert(containVertex(vertexId) && "ERROR: Vertex doesn't exists");
-    return depths_.find(vertexId)->second;
+    assert(isContainVertex(vertexId) && "ERROR: Vertex doesn't exists");
+    return verticesDepths_.at(vertexId);
   }
 
-  const Depth& getDepth() { return realDepth_; }
+  const Depth getDepth() const {
+    std::cout << std::endl << depthMap_.size() << std::endl;
+    for (int i = 0; i < depthMap_.size(); i++) {
+      std::cout << i << " : [ ";
+      for (const auto& id : depthMap_.at(i)) {
+        std::cout << id << " ";
+      }
+      std::cout << "]\n";
+    }
+    return depthMap_.size();
+  }
 
   const std::unordered_map<EdgeId, Edge>& getEdges() const { return edges_; }
 
@@ -131,11 +154,8 @@ class Graph {
     return connectivityList_;
   }
 
-  std::vector<VertexId> getVertexIds() const {
-    std::vector<VertexId> vertexIds(vertices_.size());
-    auto selector = [](auto pair) { return pair.first; };
-    transform(vertices_.begin(), vertices_.end(), vertexIds.begin(), selector);
-    return vertexIds;
+  const std::vector<std::vector<VertexId>>& getDepthMap() const {
+    return depthMap_;
   }
 
  private:
@@ -144,9 +164,9 @@ class Graph {
   EdgeId generateEdgeId() { return nextEdgeId_++; }
   VertexId generateVertexId() { return nextVertexId_++; }
 
-  Depth realDepth_ = 0;
   std::unordered_map<EdgeId, Edge> edges_;
   std::unordered_map<VertexId, Vertex> vertices_;
   std::unordered_map<VertexId, std::unordered_set<EdgeId>> connectivityList_;
-  std::unordered_map<VertexId, Depth> depths_;
+  std::unordered_map<VertexId, Depth> verticesDepths_;
+  std::vector<std::vector<VertexId>> depthMap_;
 };

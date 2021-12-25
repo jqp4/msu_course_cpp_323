@@ -1,10 +1,4 @@
-#include <assert.h>
-#include <algorithm>
-#include <array>
-#include <iostream>
-#include <unordered_map>
 #include <unordered_set>
-#include <vector>
 #include "graph.hpp"
 
 class GraphPrinter {
@@ -21,13 +15,12 @@ class GraphPrinter {
         return "red";
       default:
         throw std::runtime_error("Invalid Edge::Colors value");
-        return "-";
     }
   }
 
   std::string edgeToJSON(const Edge& edge) const {
     std::string json;
-    const auto vertexIds = edge.getVertexIds();
+    const auto& vertexIds = edge.getVertexIds();
     json += "{\"id\": " + std::to_string(edge.getId());
     json += ", \"vertex_ids\": [";
     json += std::to_string(vertexIds.first) + ", ";
@@ -55,8 +48,8 @@ class GraphPrinter {
   }
 
   std::string graphToJSON(const Graph& graph) const {
-    const auto connectivityList = graph.getConnectivityList();
-    const auto edges = graph.getEdges();
+    const auto& connectivityList = graph.getConnectivityList();
+    const auto& edges = graph.getEdges();
 
     std::string json;
     json = "{\n\"vertices\": [\n";
