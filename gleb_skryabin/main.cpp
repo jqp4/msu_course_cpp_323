@@ -16,8 +16,24 @@ void writeGraphJSON(const Graph& graph, const std::string& filename) {
 }
 
 int main() {
-  const int inputDepth = 4;
-  const int newVerticesNum = 3;
+  int inputDepth;
+  int newVerticesNum;
+
+  // std::cout << "Enter depth:\n";
+  // std::cin >> inputDepth;
+  // while (inputDepth < 0) {
+  //   throw std::runtime_error("Invalid input depth");
+  // }
+
+  // std::cout << "Enter number of new vertices:\n";
+  // std::cin >> newVerticesNum;
+  // while (inputDepth < 0) {
+  //   throw std::runtime_error("Invalid input newVerticesNum");
+  // }
+
+  inputDepth = 7;
+  newVerticesNum = 3;
+
   const GraphGenerator::Params params(inputDepth, newVerticesNum);
   const GraphGenerator generator(params);
   const Graph& graph = generator.generate();
