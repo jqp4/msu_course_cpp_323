@@ -18,9 +18,9 @@ class Graph {
     const VertexId to_vertex_id = 0;
     const EdgeId id = 0;
 
-    explicit Edge(const EdgeId& _id,
-                  const VertexId& _from_vertex_id,
-                  const VertexId& _to_vertex_id)
+    Edge(const EdgeId& _id,
+         const VertexId& _from_vertex_id,
+         const VertexId& _to_vertex_id)
         : id(_id),
           from_vertex_id(_from_vertex_id),
           to_vertex_id(_to_vertex_id) {}
